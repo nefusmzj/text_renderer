@@ -8,7 +8,7 @@ import cv2
 from loguru import logger
 
 from text_renderer.config import get_cfg, GeneratorCfg
-from text_renderer.dataset import LmdbDataset, ImgDataset
+from text_renderer.dataset import LmdbDataset, ImgDataset,PaddleOCRDataset
 from text_renderer.render import Render
 
 cv2.setNumThreads(1)
@@ -85,7 +85,7 @@ def process_setup(*args):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True, help="python file path")
-    parser.add_argument("--dataset", default="img", choices=["lmdb", "img"])
+    parser.add_argument("--dataset", default="img", choices=["lmdb", "img","paddle"])
     parser.add_argument("--num_processes", type=int, default=2)
     parser.add_argument("--log_period", type=float, default=10)
     return parser.parse_args()
@@ -98,6 +98,13 @@ if __name__ == "__main__":
     args = parse_args()
 
     dataset_cls = LmdbDataset if args.dataset == "lmdb" else ImgDataset
+
+    if args.dataset == "lmdb":
+        dataset_cls = LmdbDataset
+    elif args.dataset == "paddle":
+        dataset_cls = PaddleOCRDataset
+    else:
+        dataset_cls = ImgDataset
 
     generator_cfgs = get_cfg(args.config)
 

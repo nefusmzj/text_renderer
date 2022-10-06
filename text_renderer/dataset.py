@@ -121,6 +121,62 @@ class ImgDataset(Dataset):
             json.dump(self._data, f, indent=2, ensure_ascii=False)
 
 
+
+class PaddleOCRDataset(Dataset):
+    """
+    Save generated image as jpg file, save label and meta in text
+    txt file format:
+
+    .. code-block:: bash
+        train/0000001.jpg   23.5
+        train/0000002.jpg   563
+    """
+
+    LABEL_NAME = "labels.txt"
+
+    def __init__(self, data_dir: str):
+        super().__init__(data_dir)
+        self._img_dir = os.path.join(data_dir, "images")
+        if not os.path.exists(self._img_dir):
+            os.makedirs(self._img_dir)
+        self._label_path = os.path.join(data_dir, self.LABEL_NAME)
+
+        self._data = {"num-samples": 0, "labels": {}, "sizes": {}}
+        # if os.path.exists(self._label_path):
+        #     with open(self._label_path, "r", encoding="utf-8") as f:
+        #         self._data = json.load(f)
+
+    def write(self, name: str, image: np.ndarray, label: str):
+        img_path = os.path.join(self._img_dir, name + ".jpg")
+        cv2.imwrite(img_path, image, self.encode_param())
+        self._data["labels"][name] = label
+
+        height, width = image.shape[:2]
+        self._data["sizes"][name] = (width, height)
+
+    def read(self, name: str) -> Dict:
+        img_path = os.path.join(self._img_dir, name + ".jpg")
+        image = cv2.imread(img_path)
+        label = self._data["labels"][name]
+        size = self._data["sizes"][name]
+        return {"image": image, "label": label, "size": size}
+
+    def read_size(self, name: str) -> [int, int]:
+        return self._data["sizes"][name]
+
+    def read_count(self) -> int:
+        return self._data.get("num-samples", 0)
+
+    def write_count(self, count: int):
+        self._data["num-samples"] = count
+
+    def close(self):
+        with open(self._label_path, "w", encoding="utf-8") as f:
+            for label in self._data["labels"].items():
+                text = 'image/' + str(label[0]) + '.jpg\t' + str(label[1])+ '\n'
+                f.write(text)
+
+
 class LmdbDataset(Dataset):
     """
     Save generated image into lmdb. Compatible with https://github.com/PaddlePaddle/PaddleOCR
