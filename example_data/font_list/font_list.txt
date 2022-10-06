@@ -1,1 +1,2 @@
-simsun.ttf
+DS-DIGIB.TTF
+DS-DIGI.TTF
