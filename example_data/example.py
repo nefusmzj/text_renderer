@@ -2,7 +2,6 @@ import inspect
 import os
 from pathlib import Path
 import imgaug.augmenters as iaa
-
 from text_renderer.effect import *
 from text_renderer.corpus import *
 from text_renderer.config import (
@@ -50,19 +49,18 @@ def base_cfg(
     name: str, corpus, corpus_effects=None, layout_effects=None, layout=None, gray=True
 ):
     return GeneratorCfg(
-        num_image=50,
+        num_image=500,
         save_dir=OUT_DIR / name,
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
             perspective_transform=perspective_transform,
-            gray=gray,
+            gray=False, # 支持彩色，还没搞明白如何指定颜色
             layout_effects=layout_effects,
             layout=layout,
             corpus=corpus,
             corpus_effects=corpus_effects,
-        ),
     )
-
+    )
 
 def chn_data():
     return base_cfg(
@@ -82,9 +80,12 @@ def enum_data():
         inspect.currentframe().f_code.co_name,
         corpus=EnumCorpus(
             EnumCorpusCfg(
-                text_paths=[TEXT_DIR / "enum_text.txt"],
+                # text_paths=[TEXT_DIR / "enum_text.txt"],
+                text_paths=[TEXT_DIR / "digital.txt"],
                 filter_by_chars=True,
-                chars_file=CHAR_DIR / "chn.txt",
+                # chars_file=CHAR_DIR / "chn.txt",
+                # chars_file=CHAR_DIR / "eng.txt",
+                chars_file=CHAR_DIR / "num.txt",
                 **font_cfg
             ),
         ),
@@ -105,9 +106,11 @@ def eng_word_data():
         inspect.currentframe().f_code.co_name,
         corpus=WordCorpus(
             WordCorpusCfg(
+                # text_paths=[TEXT_DIR / "digital.txt"],
                 text_paths=[TEXT_DIR / "eng_text.txt"],
                 filter_by_chars=True,
                 chars_file=CHAR_DIR / "eng.txt",
+                # chars_file=CHAR_DIR / "number.txt",
                 **font_cfg
             ),
         ),
@@ -203,12 +206,12 @@ def imgaug_emboss_example():
 # fmt: off
 # The configuration file must have a configs variable
 configs = [
-    chn_data(),
+    #chn_data(),
     enum_data(),
-    rand_data(),
-    eng_word_data(),
-    same_line_data(),
-    extra_text_line_data(),
-    imgaug_emboss_example()
+    #rand_data(),
+    #eng_word_data(),
+    #same_line_data(),
+    #extra_text_line_data(),
+    #imgaug_emboss_example()
 ]
 # fmt: on
